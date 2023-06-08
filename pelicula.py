@@ -156,7 +156,7 @@ if __name__ == '__main__':
     print("--------------")
 
     # Creo película 2 con Id no existente
-    print("Agregado New Movie 1 con id inexistente")
+    print("Test Case 2: Agregando New Movie 2 con id inexistente")
     peli2 = Pelicula("New Movie 2", datetime(1972, 10, 25), "http://us.imdb.com/M/title-exact?new_movie_2", ["Action","Drama","Crime"], 2000)
     # Agrego peli 2 al dataframe, se agregará sin problemas por ser un Id nuevo
     df_peliculas = peli2.write_df(df_peliculas)
@@ -165,18 +165,17 @@ if __name__ == '__main__':
     print("--------------")
     
     # Creo película 3 con Id ya existente (3)
-    print("Agregado New Movie 3 con id repetido, sin overwrite")
+    print("Test Case 3: Agregando New Movie 3 con id existente, sin overwrite")
     peli3 = Pelicula("New Movie 3", datetime(1972, 10, 25), "http://us.imdb.com/M/title-exact?new_movie_3", ["Action","Drama","Crime"], 3)
     # Trato de agregar peli 3 al dataframe, me dará error porque por default el overwite es False
     df_peliculas = peli3.write_df(df_peliculas)
     print("--------------")
 
     # Trato de agregarla ahora con overwrite True
-    print("Agregado New Movie 3 con id repetido, con overwrite")
+    print("Test Case 4: Agregando New Movie 3 con id repetido, con overwrite")
     df_peliculas = peli3.write_df(df_peliculas, True)
     # Valido reemplazó correctamente la peli con id 3
     print(Pelicula.get_from_df(df_peliculas, id=3))
-    #print(df_peliculas[df_peliculas['id'] == 3])
     print("--------------")
 
     print("Probando get_from_df con nombre=Seven")

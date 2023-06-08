@@ -109,7 +109,7 @@ if __name__ == '__main__':
     current_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     print(f"Probando nueva persona que no existía, actual count personas: {len(df_personas)}, actual count trabajadores: {len(df_trabajadores)}")
-    trabajador1 = Trabajador("Ilan Rosenfeld", 1993, "M", 1900, "2023-06-07", "Tech Manager", "A", "9 - 18")
+    trabajador1 = Trabajador("Charles Darwin", 1993, "M", 1900, "2023-06-07", "Tech Manager", "A", "9 - 18")
     df_personas, df_trabajadores = trabajador1.write_df(df_personas, df_trabajadores)
     print(f"Nuevo count personas: {len(df_personas)}, nuevo count trabajadores: {len(df_trabajadores)}")
     print("--------------")
@@ -142,14 +142,14 @@ if __name__ == '__main__':
     print(f"Nuevo count personas: {len(df_personas)}, nuevo count trabjadores: {len(df_trabajadores)}")
     print("--------------")
     
-    print("Agregando a John Doe para probar el siguiente caso de uso")
-    persona_sin_trabajador = Persona("John Doe", 1970, "M", 4353)
+    print("Agregando a Juan Gomez para probar el siguiente caso de uso")
+    persona_sin_trabajador = Persona("Juan Gomez", 1970, "M", 4353)
     df_personas = persona_sin_trabajador.write_df(df_personas)
     print("--------------")
 
     
     print("Probando write con persona ya existente pero no el trabajador, Overwrite True.")
-    trabajador_de_persona_sin_trabajador = Trabajador("John Doe", 1970, "M", 4353, "2023-06-10", "Tester", "C", "10 - 16")
+    trabajador_de_persona_sin_trabajador = Trabajador("Juan Gomez", 1970, "M", 4353, "2023-06-10", "Tester", "C", "10 - 16")
     print("persona actual: ")
     persona_actual = Persona.get_from_df(df_personas, nombre_completo=persona_sin_trabajador.nombre_completo, anios=[persona_sin_trabajador.anio_nacimiento,persona_sin_trabajador.anio_nacimiento])
     print(persona_actual)

@@ -100,7 +100,7 @@ if __name__ == '__main__':
     current_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     print(f"Probando nueva persona que no existía, actual count personas: {len(df_personas)}, actual count users: {len(df_users)}")
-    user1 = Usuario("Ilan Rosenfeld", 1993, "M", 1900, "scientist", current_timestamp)
+    user1 = Usuario("Fake Student", 1993, "M", 1900, "scientist", current_timestamp)
     df_personas, df_users = user1.write_df(df_personas, df_users)
     print(f"Nuevo count personas: {len(df_personas)}, nuevo count users: {len(df_users)}")
     print("--------------")
