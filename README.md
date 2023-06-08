@@ -5,6 +5,9 @@ TP integrador ITBA Deep Learning Ilan Rosenfeld
 
 Para interactuar con el código directamente y de manera más simple, se disponibilizó un Google Colab Notebook. El mismo se encuentra en el siguiente link: https://colab.research.google.com/drive/1iBOE7OfBtzEvm-mGtN1FyDboVVr7goR5?authuser=3#scrollTo=GOmXHWAOvku0
 
+Preview (tiene menú incluido):
+![Colab menu](assets/menu_notebook.png)
+
 ## Datasets
 
 Dentro de [datasets/](datasets/) encontrarán los 5 csv originales de las entidades (personas, peliculas, scores, trabajadores, usuarios)
