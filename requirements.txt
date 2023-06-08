@@ -1,0 +1,5 @@
+pandas
+matplotlib
+
+# conda create --name itba_python_tp_integrador --file requirements.txt
+# conda activate itba_python_tp_integrador
