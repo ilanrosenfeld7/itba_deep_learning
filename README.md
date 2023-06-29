@@ -1,6 +1,18 @@
 # itba_deep_learning
 TP integrador ITBA Deep Learning Ilan Rosenfeld
 
+### Index
+
+1. [Notebook](#notebook)
+
+2. [Datasets](#datasets)
+
+3. [Clases](#clases)
+
+4. [Main](#main)
+
+5. [Estado y Pendientes](#estado-y-pendientes)
+
 ## Notebook
 
 Para interactuar con el código directamente y de manera más simple, se disponibilizó un Google Colab Notebook. El mismo se encuentra en el siguiente link: https://colab.research.google.com/drive/1iBOE7OfBtzEvm-mGtN1FyDboVVr7goR5?authuser=3#scrollTo=GOmXHWAOvku0
@@ -30,3 +42,34 @@ $ python -W ignore persona.py
 ## Main
 
 La clase [main.py](main.py) contiene el código necesario para cargar todos los csv a dataframes y asimismo guardar los dataframes como csv
+
+## Estado y Pendientes
+
+El siguiente es el avance y los pendientes del trabajo:
+
+Pelicula:
+- Alta: OK
+- Baja: OK
+- Stats: OK
+- *Pending*: volver la fecha al formato original para guardar en csv
+
+Scores:
+- Alta: OK TODO al agregar score validar que existe peli y persona
+- Baja: OK
+- Stats: pendientes: Puntuación promedio de usuario(s) por año(de película)/género. Puntuación promedio de películas por género de usuario(sexo)/rango etáreo/Ocupación.
+
+Personas:
+- Alta: OK
+- Baja: OK
+- Stats: pendientes: Cantidad de personas por año de nacimiento y Género. Cantidad total de personas.
+
+Usuarios: 
+- Alta: OK
+- Baja: OK
+- Stats: pendientes: Cantidad de usuarios por Ocupación/Año de Nacimiento. Cantidad total de usuarios.
+
+Trabajadores:
+- Alta: OK
+- Baja: Ok
+- Stats: pendientes: Cantidad de trabajadores por puesto. Cantidad total de trabajadores.
+

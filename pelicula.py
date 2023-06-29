@@ -61,7 +61,7 @@ class Pelicula:
         """
         df_peliculas = pd.read_csv(filename)
 
-        df_peliculas["Release Date"].fillna("01-Jan-1900", inplace=True)
+        df_peliculas.dropna(subset=['Release Date'], inplace=True)
         df_peliculas["Release Date"] = df_peliculas["Release Date"].apply(lambda x: datetime.strptime(x, "%d-%b-%Y"))
         
         df_peliculas["IMDB URL"].fillna("http://us.imdb.com/M/title-exact?Unknown", inplace=True)
@@ -116,13 +116,31 @@ class Pelicula:
         plt.bar(peliculas_por_anio.index, peliculas_por_anio.values)
         plt.xlabel('Anio')
         plt.ylabel('Numero de peliculas')
-        plt.title('Numero de peliculas por anio')
+        plt.title(f'Numero de peliculas por anio para anios={anios} y generos={generos}')
         # hacer que crezca de a enteros
         ax = plt.gca()
         ax.xaxis.set_major_locator(plt.MultipleLocator(base=1))
         plt.show()
+        
+        # creo columna sintética genero
+        df_mov["genero"] = None
+        for index, row in df_mov.iterrows():
+            pelicula_instance = Pelicula.create_object_from_df_row(row)
+            df_mov.loc[index, 'genero'] = ",".join(pelicula_instance.generos)
 
-        # TODO: peliculas agrupadas por genero
+        # Parto la columna 'genero' por la coma y le hago un explode
+        df_mov['genero'] = df_mov['genero'].str.split(',')
+        df_mov_exploded = df_mov.explode('genero')
+
+        peliculas_por_genero = df_mov_exploded.groupby('genero').size()
+        # Plot the grouped data
+        peliculas_por_genero.plot(kind='bar')
+        # Add labels and title to the plot
+        plt.xlabel('Generos')
+        plt.ylabel('Count')
+        plt.title(f'Numero de peliculas por genero para anios={anios} y generos={generos}')
+        # Show the plot
+        plt.show()
 
     def remove_from_df(self, df_mov):
         """
@@ -197,10 +215,7 @@ if __name__ == '__main__':
     print("Probando get_from_df con anios=1990, 1991, generos=[Thriller, Sci-Fi]")
     print(Pelicula.get_from_df(df_peliculas, anios=(1990, 1991), generos=["Thriller","Sci-Fi"]))
     print("--------------")
-    
-    print("Probando get stats con anios=1990, 1994, generos=[Thriller]")
-    print(Pelicula.get_stats(df_peliculas, anios=(1990, 1994), generos=["Thriller"]))
-    print("--------------")
+
 
     print("Probando delete row con id inexistente")
     peli4 = Pelicula("New Movie 4", datetime(1972, 10, 25), "http://us.imdb.com/M/title-exact?new_movie_4", ["Action","Drama","Crime"], 5000)
@@ -216,4 +231,12 @@ if __name__ == '__main__':
     peli4 = Pelicula("Toy Story (1995)", datetime(1995, 1, 1), "http://us.imdb.com/M/title-exact?Toy%20Story%20(1995)", ["Animation","Children's","Comedy"], 1)
     df_peliculas = peli4.remove_from_df(df_peliculas)
     print(f"Nuevo count: {len(df_peliculas)}")
+    print("--------------")
+
+    print("Probando get general stats")
+    print(Pelicula.get_stats(df_peliculas))
+    print("--------------")
+
+    print("Probando get stats entre 1990 y 1992, genero Thriller")
+    print(Pelicula.get_stats(df_peliculas, anios=[1990,1992], generos=['Thriller']))
     print("--------------")
