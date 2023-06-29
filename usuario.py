@@ -42,7 +42,7 @@ class Usuario(Persona):
             df_users = df_users.loc[(df_personas['Active Since'] >= fechas_alta[0]) & (df_personas['Active Since'] <= fechas_alta[1])]
         if anios:
             df_merged = pd.merge(df_users, df_personas, on='id')
-            df_users = df_users.loc[(df_personas['year of birth'] >= anios[0]) & (df_personas['year of birth'] <= anios[1])]
+            df_users = df_merged.loc[(df_merged['year of birth'] >= anios[0]) & (df_merged['year of birth'] <= anios[1])]
         return df_users
 
     def write_df(self, df_personas, df_users, overwrite = False):
