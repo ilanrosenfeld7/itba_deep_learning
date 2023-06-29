@@ -66,10 +66,10 @@ Personas:
 Usuarios: 
 - Alta: OK
 - Baja: OK
-- Stats: pendientes: OK
+- Stats: OK
 
 Trabajadores:
 - Alta: OK
 - Baja: Ok
-- Stats: pendientes: Cantidad de trabajadores por puesto. Cantidad total de trabajadores.
+- Stats: OK
 

@@ -26,7 +26,7 @@ class Trabajador(Persona):
         return pd.DataFrame([trabajador_as_dict])
     
     @classmethod
-    def get_from_df(cls, df_trabajadores, id=None, fechas_alta=None, puestos=None, categories=None, horario_trabajo=None):
+    def get_from_df(cls, df_trabajadores, df_personas, id=None, fechas_alta=None, puestos=None, categories=None, horario_trabajo=None, anios=None):
         """
         Este class method devuelve una lista de objetos 'Trabajador' buscando por:
         # id: id --> se considera que se pasa un único id
@@ -48,6 +48,9 @@ class Trabajador(Persona):
             df_trabajadores = df_trabajadores.query(logical_disjunction)
         if horario_trabajo:
             df_trabajadores = df_trabajadores.query('Working Hours == ' + str(horario_trabajo))
+        if anios:
+            df_merged = pd.merge(df_trabajadores, df_personas, on='id')
+            df_trabajadores = df_merged.loc[(df_merged['year of birth'] >= anios[0]) & (df_merged['year of birth'] <= anios[1])]
         return df_trabajadores
 
     
@@ -67,7 +70,7 @@ class Trabajador(Persona):
 
         self.id = persona_existente.iloc[0]['id']
         # reviso si el trabajador ya existía para la persona, sino, lo creo, si si, actualizo en base a Overwrite
-        trabajador_existente = Trabajador.get_from_df(df_trabajadores, id = self.id)
+        trabajador_existente = Trabajador.get_from_df(df_trabajadores, df_personas, id = self.id)
         if trabajador_existente.empty:
             # si no existía el trabajador para el id de persona, lo creo
             print(f"No existía trabajador para el id persona {self.id}, agregandolo con id {self.id}")
@@ -91,13 +94,43 @@ class Trabajador(Persona):
             print(f"Error: No existe una persona con nombre_completo = {self.nombre_completo} y anio_nacimiento = {self.anio_nacimiento}, entonces tampoco existirá un trabajador asociado")
         else:
             self.id = persona_existente.iloc[0]['id']
-            trabajador_existente = Trabajador.get_from_df(df_trabajadores, id=persona_existente.iloc[0]['id'])
+            trabajador_existente = Trabajador.get_from_df(df_trabajadores, df_personas, id=persona_existente.iloc[0]['id'])
             if trabajador_existente.empty:
                 print(f"Error: Si bien existe la persona con id {self.id}, no existe un trabajador asociado")
             else: 
                 print(f"A borrar trabajador con  nombre_completo = {self.nombre_completo} y anio_nacimiento = {self.anio_nacimiento}, id {trabajador_existente.iloc[0]['id']}")
                 df_trabajadores = df_trabajadores[df_trabajadores['id'] != trabajador_existente.iloc[0]['id']]
         return df_trabajadores
+
+    @classmethod
+    def get_stats(cls, df_trabajadores, df_personas, anios=None):
+        """
+        # Este class method imprime una serie de estadísticas calculadas sobre los resultados de una consulta al DataFrame df_users. 
+        # Las estadísticas se realizarán sobre las filas que cumplan con los requisitos de:
+        # anios: [desde_año, hasta_año]
+        # Las estadísticas son:
+        # - Cantidad de trabajadores por puesto.
+        # - Cantidad total de trabajadores.
+        """
+        from matplotlib import pyplot as plt
+
+        df_trabajadores = Trabajador.get_from_df(df_trabajadores, df_personas, anios=anios)
+
+        # cantidad total de trabajadores
+        cantidad_trabajadores = len(df_trabajadores)
+        print(f"Cantidad de trabajadores: {cantidad_trabajadores}")
+
+        # Cantidad de trabajadores por puesto. 
+
+        trabajadores_por_puesto = df_trabajadores.groupby(df_users['Position']).size()
+        plt.bar(trabajadores_por_puesto.index, trabajadores_por_puesto.values)
+        plt.xlabel('Position')
+        plt.ylabel('Numero de trabajadores')
+        plt.title(f'Numero de trabajadores por puesto para anios={anios}')
+        # hacer que crezca de a enteros
+        ax = plt.gca()
+        ax.xaxis.set_major_locator(plt.MultipleLocator(base=1))
+        plt.show()
     
 
 # python -W ignore trabajador.py
@@ -121,7 +154,7 @@ if __name__ == '__main__':
     persona_actual = Persona.get_from_df(df_personas, nombre_completo=trabajador2.nombre_completo, anios=[trabajador2.anio_nacimiento,trabajador2.anio_nacimiento])
     print(persona_actual)
     print("trabajador actual: ")
-    print(Trabajador.get_from_df(df_trabajadores, id=persona_actual.iloc[0]['id']))
+    print(Trabajador.get_from_df(df_trabajadores, df_personas, id=persona_actual.iloc[0]['id']))
     df_personas, df_trabajadores = trabajador2.write_df(df_personas, df_trabajadores)
     print(f"Nuevo count personas: {len(df_personas)}, nuevo count trabajadores: {len(df_trabajadores)}")
     print("--------------")
@@ -132,13 +165,13 @@ if __name__ == '__main__':
     persona_actual = Persona.get_from_df(df_personas, nombre_completo=trabajador2.nombre_completo, anios=[trabajador2.anio_nacimiento,trabajador2.anio_nacimiento])
     print(persona_actual)
     print("trabjador actual: ")
-    print(Trabajador.get_from_df(df_trabajadores, id=persona_actual.iloc[0]['id']))
+    print(Trabajador.get_from_df(df_trabajadores, df_personas, id=persona_actual.iloc[0]['id']))
     df_personas, df_trabajadores = trabajador2.write_df(df_personas, df_trabajadores, overwrite=True)
     print("nueva persona: ")
     persona_actual = Persona.get_from_df(df_personas, nombre_completo=trabajador2.nombre_completo, anios=[trabajador2.anio_nacimiento,trabajador2.anio_nacimiento])
     print(persona_actual)
     print("nuevo trabjador: ")
-    print(Trabajador.get_from_df(df_trabajadores, id=persona_actual.iloc[0]['id']))
+    print(Trabajador.get_from_df(df_trabajadores, df_personas, id=persona_actual.iloc[0]['id']))
     print(f"Nuevo count personas: {len(df_personas)}, nuevo count trabjadores: {len(df_trabajadores)}")
     print("--------------")
     
@@ -154,13 +187,13 @@ if __name__ == '__main__':
     persona_actual = Persona.get_from_df(df_personas, nombre_completo=persona_sin_trabajador.nombre_completo, anios=[persona_sin_trabajador.anio_nacimiento,persona_sin_trabajador.anio_nacimiento])
     print(persona_actual)
     print("trabajador actual: ")
-    print(Trabajador.get_from_df(df_trabajadores, id=persona_actual.iloc[0]['id']))
+    print(Trabajador.get_from_df(df_trabajadores, df_personas, id=persona_actual.iloc[0]['id']))
     df_personas, df_trabajadores = trabajador_de_persona_sin_trabajador.write_df(df_personas, df_trabajadores, overwrite=True)
     print("misma persona: ")
     persona_actual = Persona.get_from_df(df_personas, nombre_completo=persona_sin_trabajador.nombre_completo, anios=[persona_sin_trabajador.anio_nacimiento,persona_sin_trabajador.anio_nacimiento])
     print(persona_actual)
     print("nuevo usuario: ")
-    print(Trabajador.get_from_df(df_trabajadores, id=persona_actual.iloc[0]['id']))
+    print(Trabajador.get_from_df(df_trabajadores, df_personas, id=persona_actual.iloc[0]['id']))
     print(f"Nuevo count personas: {len(df_personas)}, nuevo count users: {len(df_trabajadores)}")
     print("--------------")
 
@@ -186,3 +219,10 @@ if __name__ == '__main__':
     print(f"Nuevo count: {len(df_trabajadores)}")
     print("--------------")
   
+    print("Probando get general stats")
+    print(Trabajador.get_stats(df_trabajadores, df_personas))
+    print("--------------")
+
+    print("Probando get stats entre 1970 y 2000")
+    print(Trabajador.get_stats(df_trabajadores, df_personas, anios=[1970,2000]))
+    print("--------------")

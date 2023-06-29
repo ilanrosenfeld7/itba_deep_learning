@@ -94,7 +94,7 @@ class Usuario(Persona):
         return df_users
 
     @classmethod
-    def get_stats(cls, df_users, anios=None):
+    def get_stats(cls, df_users, df_personas, anios=None):
         """
         # Este class method imprime una serie de estadísticas calculadas sobre los resultados de una consulta al DataFrame df_users. 
         # Las estadísticas se realizarán sobre las filas que cumplan con los requisitos de:
@@ -219,9 +219,9 @@ if __name__ == '__main__':
     print("--------------")
 
     print("Probando get general stats")
-    print(Usuario.get_stats(df_users))
+    print(Usuario.get_stats(df_users, df_personas))
     print("--------------")
 
     print("Probando get stats entre 1990 y 1992")
-    print(Usuario.get_stats(df_users, anios=[1980,1992]))
+    print(Usuario.get_stats(df_users, df_personas, anios=[1980,1992]))
     print("--------------")
