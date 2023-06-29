@@ -81,6 +81,46 @@ class Persona:
             df_personas = df_personas[df_personas['id'] != row_existente.iloc[0]['id']]
         return df_personas
     
+    @classmethod
+    def get_stats(cls, df_personas, anios=None,):
+        """
+        # Este class method imprime una serie de estadísticas calculadas sobre los resultados de una consulta al DataFrame df_personas. 
+        # Las estadísticas se realizarán sobre las filas que cumplan con los requisitos de:
+        # anios: [desde_año, hasta_año]
+        # Las estadísticas son:
+        # - Cantidad de personas por año de nacimiento y Género. 
+        # - Cantidad total de personas.
+        """
+        from matplotlib import pyplot as plt
+
+        df_personas = Persona.get_from_df(df_personas, anios=anios)
+
+        # cantidad total de personas
+        cantidad_personas = len(df_personas)
+        print(f"Cantidad de personas: {cantidad_personas}")
+
+        # Cantidad de personas por año de nacimiento y Género. 
+
+        personas_por_anio_nacimiento = df_personas.groupby(df_personas['year of birth']).size()
+        plt.bar(personas_por_anio_nacimiento.index, personas_por_anio_nacimiento.values)
+        plt.xlabel('Anio nacimiento')
+        plt.ylabel('Numero de personas')
+        plt.title(f'Numero de personas por anio de nacimiento para anios={anios}')
+        # hacer que crezca de a enteros
+        ax = plt.gca()
+        ax.xaxis.set_major_locator(plt.MultipleLocator(base=1))
+        plt.show()
+
+        personas_por_genero = df_personas.groupby(df_personas['Gender']).size()
+        plt.bar(personas_por_genero.index, personas_por_genero.values)
+        plt.xlabel('Anio nacimiento')
+        plt.ylabel('Numero de personas')
+        plt.title(f'Numero de personas por genero para anios={anios}')
+        # hacer que crezca de a enteros
+        ax = plt.gca()
+        ax.xaxis.set_major_locator(plt.MultipleLocator(base=1))
+        plt.show()
+    
 # python -W ignore persona.py
 if __name__ == '__main__':
     # Cargar CSV a un dataframe
@@ -117,4 +157,12 @@ if __name__ == '__main__':
     persona4 = Persona("Janice Mccullough", 1965, "F", "15213")
     df_personas = persona4.remove_from_df(df_personas)
     print(f"Nuevo count: {len(df_personas)}")
+    print("--------------")
+
+    print("Probando get general stats")
+    print(Persona.get_stats(df_personas))
+    print("--------------")
+
+    print("Probando get stats entre 1990 y 1992")
+    print(Persona.get_stats(df_personas, anios=[1980,1992]))
     print("--------------")

@@ -61,7 +61,7 @@ Scores:
 Personas:
 - Alta: OK
 - Baja: OK
-- Stats: pendientes: Cantidad de personas por año de nacimiento y Género. Cantidad total de personas.
+- Stats: OK
 
 Usuarios: 
 - Alta: OK
