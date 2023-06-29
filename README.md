@@ -66,7 +66,7 @@ Personas:
 Usuarios: 
 - Alta: OK
 - Baja: OK
-- Stats: pendientes: Cantidad de usuarios por Ocupación/Año de Nacimiento. Cantidad total de usuarios.
+- Stats: pendientes: OK
 
 Trabajadores:
 - Alta: OK

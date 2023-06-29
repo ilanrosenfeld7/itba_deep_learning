@@ -25,7 +25,7 @@ class Usuario(Persona):
         return pd.DataFrame([user_as_dict])
     
     @classmethod
-    def get_from_df(cls, df_users, id=None, ocupaciones=None, fechas_alta=None):
+    def get_from_df(cls, df_users, df_personas, id=None, ocupaciones=None, fechas_alta=None, anios=None):
         """
         Este class method devuelve una lista de objetos 'Usuario' buscando por:
         # id: id --> se considera que se pasa un único id
@@ -40,6 +40,9 @@ class Usuario(Persona):
             df_users = df_users.query(logical_disjunction)
         if fechas_alta:
             df_users = df_users.loc[(df_personas['Active Since'] >= fechas_alta[0]) & (df_personas['Active Since'] <= fechas_alta[1])]
+        if anios:
+            df_merged = pd.merge(df_users, df_personas, on='id')
+            df_users = df_users.loc[(df_personas['year of birth'] >= anios[0]) & (df_personas['year of birth'] <= anios[1])]
         return df_users
 
     def write_df(self, df_personas, df_users, overwrite = False):
@@ -58,7 +61,7 @@ class Usuario(Persona):
 
         self.id = persona_existente.iloc[0]['id']
         # reviso si el usuario ya existía para la persona, sino, lo creo, si si, actualizo en base a Overwrite
-        user_existente = Usuario.get_from_df(df_users, id = self.id)
+        user_existente = Usuario.get_from_df(df_users, df_personas, id = self.id)
         if user_existente.empty:
             # si no existía el user para el id de persona, lo creo
             print(f"No existía user para el id persona {self.id}, agregandolo con id {self.id}")
@@ -82,13 +85,53 @@ class Usuario(Persona):
             print(f"Error: No existe una persona con nombre_completo = {self.nombre_completo} y anio_nacimiento = {self.anio_nacimiento}, entonces tampoco existirá un user asociado")
         else:
             self.id = persona_existente.iloc[0]['id']
-            user_existente = Usuario.get_from_df(df_users, id=persona_existente.iloc[0]['id'])
+            user_existente = Usuario.get_from_df(df_users, df_personas, id=persona_existente.iloc[0]['id'])
             if user_existente.empty:
                 print(f"Error: Si bien existe la persona con id {self.id}, no existe un usuario asociado")
             else: 
                 print(f"A borrar user con  nombre_completo = {self.nombre_completo} y anio_nacimiento = {self.anio_nacimiento}, id {user_existente.iloc[0]['id']}")
                 df_users = df_users[df_users['id'] != user_existente.iloc[0]['id']]
         return df_users
+
+    @classmethod
+    def get_stats(cls, df_users, anios=None):
+        """
+        # Este class method imprime una serie de estadísticas calculadas sobre los resultados de una consulta al DataFrame df_users. 
+        # Las estadísticas se realizarán sobre las filas que cumplan con los requisitos de:
+        # anios: [desde_año, hasta_año]
+        # Las estadísticas son:
+        # - Cantidad de usuarios por Ocupación/Año de Nacimiento.
+        # - Cantidad total de usuarios.
+        """
+        from matplotlib import pyplot as plt
+
+        df_users = Usuario.get_from_df(df_users, df_personas, anios=anios)
+
+        # cantidad total de usuarios
+        cantidad_users = len(df_personas)
+        print(f"Cantidad de usuarios: {cantidad_users}")
+
+        # Cantidad de usuarios por ocupación y año de nacimiento. 
+
+        usuarios_por_ocupacion = df_users.groupby(df_users['Occupation']).size()
+        plt.bar(usuarios_por_ocupacion.index, usuarios_por_ocupacion.values)
+        plt.xlabel('Occupation')
+        plt.ylabel('Numero de usuarios')
+        plt.title(f'Numero de usuarios por ocupacion para anios={anios}')
+        # hacer que crezca de a enteros
+        ax = plt.gca()
+        ax.xaxis.set_major_locator(plt.MultipleLocator(base=1))
+        plt.show()
+
+        usuarios_por_anio_nacimiento = df_users.groupby(df_personas['year of birth']).size()
+        plt.bar(usuarios_por_anio_nacimiento.index, usuarios_por_anio_nacimiento.values)
+        plt.xlabel('Anio nacimiento')
+        plt.ylabel('Numero de usuarios')
+        plt.title(f'Numero de usuarios por anio de nacimiento para anios={anios}')
+        # hacer que crezca de a enteros
+        ax = plt.gca()
+        ax.xaxis.set_major_locator(plt.MultipleLocator(base=1))
+        plt.show()
     
 
 # python -W ignore usuario.py
@@ -112,7 +155,7 @@ if __name__ == '__main__':
     persona_actual = Persona.get_from_df(df_personas, nombre_completo=user2.nombre_completo, anios=[user2.anio_nacimiento,user2.anio_nacimiento])
     print(persona_actual)
     print("usuario actual: ")
-    print(Usuario.get_from_df(df_users, id=persona_actual.iloc[0]['id']))
+    print(Usuario.get_from_df(df_users, df_personas, id=persona_actual.iloc[0]['id']))
     df_personas, df_users = user2.write_df(df_personas, df_users)
     print(f"Nuevo count personas: {len(df_personas)}, nuevo count users: {len(df_users)}")
     print("--------------")
@@ -122,13 +165,13 @@ if __name__ == '__main__':
     persona_actual = Persona.get_from_df(df_personas, nombre_completo=user2.nombre_completo, anios=[user2.anio_nacimiento,user2.anio_nacimiento])
     print(persona_actual)
     print("usuario actual: ")
-    print(Usuario.get_from_df(df_users, id=persona_actual.iloc[0]['id']))
+    print(Usuario.get_from_df(df_users, df_personas, id=persona_actual.iloc[0]['id']))
     df_personas, df_users = user2.write_df(df_personas, df_users, overwrite=True)
     print("nueva persona: ")
     persona_actual = Persona.get_from_df(df_personas, nombre_completo=user2.nombre_completo, anios=[user2.anio_nacimiento,user2.anio_nacimiento])
     print(persona_actual)
     print("nuevo usuario: ")
-    print(Usuario.get_from_df(df_users, id=persona_actual.iloc[0]['id']))
+    print(Usuario.get_from_df(df_users, df_personas, id=persona_actual.iloc[0]['id']))
     print(f"Nuevo count personas: {len(df_personas)}, nuevo count users: {len(df_users)}")
     print("--------------")
     
@@ -143,13 +186,13 @@ if __name__ == '__main__':
     persona_actual = Persona.get_from_df(df_personas, nombre_completo=persona_sin_user.nombre_completo, anios=[persona_sin_user.anio_nacimiento,persona_sin_user.anio_nacimiento])
     print(persona_actual)
     print("usuario actual: ")
-    print(Usuario.get_from_df(df_users, id=persona_actual.iloc[0]['id']))
+    print(Usuario.get_from_df(df_users, df_personas, id=persona_actual.iloc[0]['id']))
     df_personas, df_users = user_de_persona_sin_user.write_df(df_personas, df_users, overwrite=True)
     print("misma persona: ")
     persona_actual = Persona.get_from_df(df_personas, nombre_completo=persona_sin_user.nombre_completo, anios=[persona_sin_user.anio_nacimiento,persona_sin_user.anio_nacimiento])
     print(persona_actual)
     print("nuevo usuario: ")
-    print(Usuario.get_from_df(df_users, id=persona_actual.iloc[0]['id']))
+    print(Usuario.get_from_df(df_users, df_personas, id=persona_actual.iloc[0]['id']))
     print(f"Nuevo count personas: {len(df_personas)}, nuevo count users: {len(df_users)}")
     print("--------------")
 
@@ -173,4 +216,12 @@ if __name__ == '__main__':
     print(f"Probando delete con persona existente, y también user, actual count: {len(df_users)}")
     df_users = user2.remove_from_df(df_users)
     print(f"Nuevo count: {len(df_users)}")
+    print("--------------")
+
+    print("Probando get general stats")
+    print(Usuario.get_stats(df_users))
+    print("--------------")
+
+    print("Probando get stats entre 1990 y 1992")
+    print(Usuario.get_stats(df_users, anios=[1980,1992]))
     print("--------------")
