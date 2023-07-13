@@ -207,7 +207,7 @@ class Score:
         plt.xlabel('Ocupación')
         plt.ylabel('Puntuación promedio')
         plt.title(f'Puntuación promedio por Ocupación')
-        plt.show()
+        plt.show()  
 
 # python -W ignore score.py
 if __name__ == '__main__':
@@ -253,12 +253,9 @@ if __name__ == '__main__':
     print(f"Nuevo count: {len(df_scores)}")
     print("--------------")
 
-    """
     print(f"Probando stats: puntuacion_promedio_usuarios_anio_genero para años 1990-1992, user=1")
     Score.puntuacion_promedio_usuarios_anio_genero(df_scores, df_peliculas, df_users, anios=[1990,1992], usuarios=[5,6,7,8])
     print("--------------")
-    """
-    
     
     print(f"Probando stats: puntuacion_promedio_peliculas para años 1990-1992 ")
     Score.puntuacion_promedio_peliculas(df_scores, df_peliculas, df_users, df_personas, df_trabajadores, anios=[1990,1992])
