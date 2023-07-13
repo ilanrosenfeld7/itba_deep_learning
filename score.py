@@ -125,9 +125,9 @@ class Score:
             y = user_data['rating']
             ax.bar(x + offset + i * width, y, width=width, label=f'User {user}')
 
-        ax.set_xlabel('Release Year')
-        ax.set_ylabel('Average Rating')
-        ax.set_title('Average Rating by User, Split by Release Year')
+        ax.set_xlabel('Anio lanzamiento')
+        ax.set_ylabel('Rating promedio')
+        ax.set_title('Rating Promedio por usuario, dividido por anio de lanzamiento')
         ax.set_xticks(x)
         ax.legend()
         plt.show()
@@ -151,9 +151,9 @@ class Score:
             x_pos = [gender_mapping[gender] + offset + i * width for gender in user_data['genero']]
             ax.bar(x_pos, y, width=width, label=f'User {user}')
 
-        ax.set_xlabel('Movie Gender')
-        ax.set_ylabel('Average Rating')
-        ax.set_title('Average Rating by User, Split by Movie Gender')
+        ax.set_xlabel('Genero de pelicula')
+        ax.set_ylabel('Rating Promedio')
+        ax.set_title('Rating promedio por usuario, dividido por género de película')
         ax.set_xticks(range(len(gender_mapping)))
         ax.set_xticklabels(gender_mapping.keys())
         ax.legend()
@@ -176,14 +176,14 @@ class Score:
         y = grouped_df['rating']
 
         ax.bar(x, y)
-        ax.set_xlabel('User Gender')
-        ax.set_ylabel('Mean Rating')
-        ax.set_title('Mean Rating Grouped by User Gender')
+        ax.set_xlabel('Género de usuario')
+        ax.set_ylabel('Rating promedio')
+        ax.set_title('Rating promedio agrupado por género de usuario')
         plt.show()
 
         # Puntuación promedio de películas por rango etario
         def get_year_range(year):
-            year_ranges = [(year, year + 20) for year in range(1900, 2011, 5)]
+            year_ranges = [(year, year + 20) for year in range(1900, 2011, 20)]
             for start, end in year_ranges:
                 if start <= year <= end:
                     return f'{start}-{end}'
