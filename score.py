@@ -1,5 +1,10 @@
 import pandas as pd
 from datetime import datetime
+from matplotlib import pyplot as plt
+from pelicula import Pelicula
+from usuario import Usuario
+from persona import Persona
+from trabajador import Trabajador
 
 class Score:
     
@@ -83,19 +88,135 @@ class Score:
         return df_scores
 
     @classmethod
-    def puntuacion_promedio_usuarios(cls, df_mov):
-        # TODO Puntuación promedio de usuario(s) por año(de película)/género.
-        pass
+    def puntuacion_promedio_usuarios_anio_genero(cls, df_scores, df_peliculas, df_users, anios=None, usuarios=None):
+        # Puntuación promedio de usuario(s) por año(de película)/género
+
+        # creo columna sintética genero y año de lanzamiento
+        df_peliculas["genero"] = None
+        for index, row in df_peliculas.iterrows():
+            pelicula_instance = Pelicula.create_object_from_df_row(row)
+            df_peliculas.loc[index, 'genero'] = ",".join(pelicula_instance.generos)
+            df_peliculas.loc[index, 'anio_lanzamiento_pelicula'] = pelicula_instance.fecha_lanzamiento.year
+        # Parto la columna 'genero' por la coma y le hago un explode
+        df_peliculas['genero'] = df_peliculas['genero'].str.split(',')
+        df_mov_exploded = df_peliculas.explode('genero')
+
+        df_scores_peliculas_merged = pd.merge(df_scores, df_mov_exploded, left_on='movie_id', right_on='id')
+        df_scores_peliculas_merged_filtered = df_scores_peliculas_merged.loc[(df_scores_peliculas_merged['Release Date'] >= datetime(anios[0],1,1)) & (df_scores_peliculas_merged['Release Date'] <= datetime(anios[1],1,1))]
+        
+        if usuarios:
+            df_users = df_users[df_users['id'].isin(usuarios)]
+        
+        df_scores_peliculas_users_merged = pd.merge(df_scores_peliculas_merged_filtered, df_users, left_on='user_id', right_on='id')
+        
+        # Puntuación promedio de usuario(s) por año(de película)
+        grouped_df = df_scores_peliculas_users_merged.groupby(['anio_lanzamiento_pelicula', 'user_id']).mean().reset_index()
+
+        fig, ax = plt.subplots()
+
+        users = grouped_df['user_id'].unique()
+        x = grouped_df['anio_lanzamiento_pelicula'].unique()
+
+        width = 0.2
+        offset = -0.2 * len(users) / 2
+
+        for i, user in enumerate(users):
+            user_data = grouped_df[grouped_df['user_id'] == user]
+            y = user_data['rating']
+            ax.bar(x + offset + i * width, y, width=width, label=f'User {user}')
+
+        ax.set_xlabel('Release Year')
+        ax.set_ylabel('Average Rating')
+        ax.set_title('Average Rating by User, Split by Release Year')
+        ax.set_xticks(x)
+        ax.legend()
+        plt.show()
+
+        # Puntuación promedio de usuario(s) por género
+        grouped_df = df_scores_peliculas_users_merged.groupby(['genero', 'user_id']).mean().reset_index()
+
+        # Create dictionary to map gender values to numeric positions
+        gender_mapping = {gender: i for i, gender in enumerate(grouped_df['genero'].unique())}
+
+        # Plot bar chart
+        fig, ax = plt.subplots()
+
+        users = grouped_df['user_id'].unique()
+        width = 0.2
+        offset = -0.2 * len(users) / 2
+
+        for i, user in enumerate(users):
+            user_data = grouped_df[grouped_df['user_id'] == user]
+            y = user_data['rating']
+            x_pos = [gender_mapping[gender] + offset + i * width for gender in user_data['genero']]
+            ax.bar(x_pos, y, width=width, label=f'User {user}')
+
+        ax.set_xlabel('Movie Gender')
+        ax.set_ylabel('Average Rating')
+        ax.set_title('Average Rating by User, Split by Movie Gender')
+        ax.set_xticks(range(len(gender_mapping)))
+        ax.set_xticklabels(gender_mapping.keys())
+        ax.legend()
+        plt.show()
+
 
     @classmethod
-    def puntuacion_promedio_peliculas(cls, df_mov):
-        # TODO Puntuación promedio de películas por género de usuario(sexo)/rango etáreo/Ocupación.
-        pass
+    def puntuacion_promedio_peliculas(cls, df_scores, df_peliculas, df_users, df_personas, df_trabajadores, anios=None):
+        # Puntuación promedio de películas por género de usuario(sexo)/rango etario/Ocupación.
+        
+        df_users_personas_merged = pd.merge(df_users, df_personas, on='id')
+        df_scores_users_merged = pd.merge(df_scores, df_users_personas_merged, left_on='user_id', right_on='id')
+        
+        # Puntuación promedio de películas por género de usuario(sexo)
+        grouped_df = df_scores_users_merged.groupby(['Gender']).mean().reset_index()
+
+        fig, ax = plt.subplots()
+
+        x = grouped_df['Gender']
+        y = grouped_df['rating']
+
+        ax.bar(x, y)
+        ax.set_xlabel('User Gender')
+        ax.set_ylabel('Mean Rating')
+        ax.set_title('Mean Rating Grouped by User Gender')
+        plt.show()
+
+        # Puntuación promedio de películas por rango etario
+        def get_year_range(year):
+            year_ranges = [(year, year + 20) for year in range(1900, 2011, 5)]
+            for start, end in year_ranges:
+                if start <= year <= end:
+                    return f'{start}-{end}'
+            return 'Year not in range'
+        
+        # Add a new column range
+        df_scores_users_merged['rango_etario'] = df_scores_users_merged['year of birth'].apply(get_year_range)
+        puntuacion_usuarios_por_rango_etario = df_scores_users_merged.groupby('rango_etario')['rating'].mean()
+        puntuacion_usuarios_por_rango_etario.plot(kind='bar')
+
+        plt.xlabel('Rango etario')
+        plt.ylabel('Puntuación promedio')
+        plt.title(f'Puntuación promedio por rango etareo')
+        plt.show()
+
+        # Puntuación promedio de películas por ocupación
+        df_scores_users_merged = pd.merge(df_scores_users_merged, df_trabajadores, left_on='user_id', right_on='id')
+        puntuacion_usuarios_por_ocupacion = df_scores_users_merged.groupby('Position')['rating'].mean()
+        puntuacion_usuarios_por_ocupacion.plot(kind='bar')
+
+        plt.xlabel('Ocupación')
+        plt.ylabel('Puntuación promedio')
+        plt.title(f'Puntuación promedio por Ocupación')
+        plt.show()
 
 # python -W ignore score.py
 if __name__ == '__main__':
     # Cargar CSV a un dataframe
     df_scores = Score.create_df_from_csv(filename="datasets/scores.csv")
+    df_users = Usuario.create_df_from_csv(filename="datasets/usuarios.csv")
+    df_peliculas = Pelicula.create_df_from_csv(filename="datasets/peliculas.csv")
+    df_personas = Persona.create_df_from_csv(filename="datasets/personas.csv")
+    df_trabajadores = Trabajador.create_df_from_csv(filename="datasets/trabajadores.csv")
     
     current_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -130,5 +251,16 @@ if __name__ == '__main__':
     score3 = Score(186, 302, 3, current_timestamp)
     df_scores = score3.remove_from_df(df_scores)
     print(f"Nuevo count: {len(df_scores)}")
+    print("--------------")
+
+    """
+    print(f"Probando stats: puntuacion_promedio_usuarios_anio_genero para años 1990-1992, user=1")
+    Score.puntuacion_promedio_usuarios_anio_genero(df_scores, df_peliculas, df_users, anios=[1990,1992], usuarios=[5,6,7,8])
+    print("--------------")
+    """
+    
+    
+    print(f"Probando stats: puntuacion_promedio_peliculas para años 1990-1992 ")
+    Score.puntuacion_promedio_peliculas(df_scores, df_peliculas, df_users, df_personas, df_trabajadores, anios=[1990,1992])
     print("--------------")
     

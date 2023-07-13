@@ -54,9 +54,9 @@ Pelicula:
 - *Pending*: volver la fecha al formato original para guardar en csv
 
 Scores:
-- Alta: OK TODO al agregar score validar que existe peli y persona
+- Alta: OK 
 - Baja: OK
-- Stats: pendientes: Puntuación promedio de usuario(s) por año(de película)/género. Puntuación promedio de películas por género de usuario(sexo)/rango etáreo/Ocupación.
+- Stats: OK 
 
 Personas:
 - Alta: OK
