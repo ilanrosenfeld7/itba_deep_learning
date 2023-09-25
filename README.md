@@ -121,6 +121,6 @@ $ pip install -r requirements.txt
 ```
 $ python db_tables_creation.py
 ```
-Darle click derecho Refresh a _itba_db_ en pgAdmin y validar que las tablas se crearon en _itba_db > Schemas > public > Tables_. En [db_tables_creation.py](db_tables_creation.py) están los SELECT de ejemplo para validar que la data existe.
+Darle click derecho Refresh a _itba_db_ en pgAdmin y validar que las tablas se crearon en _itba_db > Schemas > public > Tables_. En [useful_queries.sql](useful_queries.sql) están los SELECT de ejemplo para validar que la data existe.
 
 _**Nota**: si se corre más de una vez podría dar error por repetir claves primarias_
