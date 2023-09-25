@@ -11,7 +11,7 @@ TP integrador ITBA Deep Learning Ilan Rosenfeld
 
 4. [Main](#main)
 
-5. [Estado y Pendientes](#estado-y-pendientes)
+5. [RDBMS - PostgreSQL](#rdbms-(postgresql))
 
 ## Notebook
 
@@ -43,33 +43,84 @@ $ python -W ignore persona.py
 
 La clase [main.py](main.py) contiene el código necesario para cargar todos los csv a dataframes y asimismo guardar los dataframes como csv
 
-## Estado y Pendientes
+## RDBMS (PostgreSQL)
 
-El siguiente es el avance y los pendientes del trabajo:
+Seguir los siguientes pasos para instalar la base de datos PostgreSQL local:
 
-Pelicula:
-- Alta: OK
-- Baja: OK
-- Stats: OK
-- *Pending*: volver la fecha al formato original para guardar en csv
+1) Instalar docker
+2) Pullear imagen de docker
+```
+$ docker pull postgres
+```
+3) Crear volumen para mantener persistencia al apagar y prender container
+```
+$ docker volume create pg_data
+```
 
-Scores:
-- Alta: OK 
-- Baja: OK
-- Stats: OK 
+4) Crear network de docker
+```
+$ docker network create itba_network
+```
 
-Personas:
-- Alta: OK
-- Baja: OK
-- Stats: OK
+5) Crear folder pg_data
+```
+$ mkdir pg_data
+```
+y luego correr postgres container:
 
-Usuarios: 
-- Alta: OK
-- Baja: OK
-- Stats: OK
+```
+$ docker run --name postgres-container \
+    --network itba_network \
+    -e POSTGRES_PASSWORD=itba123 \
+    -d \
+    -p 5432:5432 \
+    -v pg_data:/var/lib/postgresql/data postgres 
+```
 
-Trabajadores:
-- Alta: OK
-- Baja: Ok
-- Stats: OK
+Explicación variables:
+- _--name postgres-container_: Assigns a name to the container.
+- _-e POSTGRES_PASSWORD=<password>_: Sets the PostgreSQL password.
+- _-d_: Runs the container in detached mode.
+- _-p 5432:5432_: Maps port 5432 from the container to your host machine (you can change the port as needed).
+- _-v pg_data:/var/lib/postgresql/data_: Mounts the pg_data volume to the PostgreSQL container's data directory, allowing data persistence.
 
+Si se apaga la computadora y se cae el container, correr de nuevo el comando, y ante el error _Error response from daemon: Conflict. The container name "/postgres-container" is already in use by container "XXX"_, hacer _docker start XXX_.
+
+6) Pullear y levantar imagen de docker de pgAdmin
+
+Para poder acceder a la DB desde una interfaz gráfica (si aún no se pulleó la imagen, este comando la pullea la primera vez y luego la levanta)
+```
+$ docker run -p 80:80 \
+    --name=pg_admin_container \
+    --network=itba_network \
+    -e 'PGADMIN_DEFAULT_EMAIL=user@domain.com' \
+    -e 'PGADMIN_DEFAULT_PASSWORD=SuperSecret' \
+    -e 'PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION=True' \
+    -e 'PGADMIN_CONFIG_LOGIN_BANNER="Authorised users only!"' \
+    -e 'PGADMIN_CONFIG_CONSOLE_LOG_LEVEL=10' \
+    -d dpage/pgadmin4
+```
+
+Mismo caso, ante error de _container is already in use_, hacer _docker start_. 
+
+7) Entrar en el browser a localhost:80 y se abrirá la interfaz de pgAdmin, ingresar con las credenciales mencionadas arriba.
+
+8) Dentro de pgAdmin, ir a _Servers >> Create - Server Group_. Llamarlo _itba_. Luego darle click derecho a itba, _Register > Server_. Llamarlo _itba_server_. Ir al tab _Connection_, en _Host name/address_ colocar _postgres-container_, dejar _port:5432_, como username dejar _postgres_, y como password _itba123_.
+
+9) Desplegar itba_db, en Databases dar click derecho, _Create > Database_, darle _itba_db_. Guardar
+
+## ORM (sqlalchemy)
+
+1) Actualizar su ambiente virtual (generalmente conda) con el nuevo requirements.txt
+
+```
+$ pip install -r requirements.txt
+```
+
+2) Las clases pelicula, persona, score, trabajador, usuario y score fueron actualizadas con código sqlalchemy para definirse como tablas. Correr el script que las inyecta en el postgres:
+```
+$ python db_tables_creation.py
+```
+Darle click derecho Refresh a _itba_db_ en pgAdmin y validar que las tablas se crearon en _itba_db > Schemas > public > Tables_. En [db_tables_creation.py](db_tables_creation.py) están los SELECT de ejemplo para validar que la data existe.
+
+_**Nota**: si se corre más de una vez podría dar error por repetir claves primarias_

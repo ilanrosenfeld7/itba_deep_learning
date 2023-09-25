@@ -5,8 +5,20 @@ from pelicula import Pelicula
 from usuario import Usuario
 from persona import Persona
 from trabajador import Trabajador
+from sqlalchemy import Column, Integer, DateTime, Enum
+from sqlalchemy.ext.declarative import declarative_base
 
-class Score:
+Base = declarative_base()
+
+class Score(Base):
+
+    __tablename__ = 'Score'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, nullable=False)
+    pelicula_id = Column(Integer, nullable=False)
+    puntuacion = Column(Enum(name='puntuacion_enum', values=[1, 2, 3, 4, 5]), nullable=False)
+    timestamp = Column(DateTime, nullable=False)
     
     def __init__(self, user_id, pelicula_id, puntuacion, timestamp, id=None):
         self.user_id = user_id

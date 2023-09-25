@@ -1,7 +1,28 @@
 import pandas as pd
 from datetime import datetime
+from sqlalchemy import Column, Integer, String, Enum
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 
-class Persona:
+Base = declarative_base()
+
+# Define the Gender enum
+class GenderEnum(Enum):
+    FEMININE = "F"
+    MASCULINE = "M"
+
+class Persona(Base):
+    __tablename__ = 'Persona'
+
+    id = Column(Integer, primary_key=True)
+    nombre_completo = Column(String(255), nullable=False)
+    anio_nacimiento = Column(Integer, nullable=False)
+    genero = Column(String(length=1), nullable=False)
+    codigo_postal = Column(String(20), nullable=False)
+
+    usuario = relationship("Usuario", uselist=False, back_populates="persona")
+    trabajador = relationship("Trabajador", uselist=False, back_populates="persona")
+
 
     def __init__(self, nombre_completo, anio_nacimiento, genero, codigo_postal, id=None):
         self.id = id
@@ -9,6 +30,13 @@ class Persona:
         self.anio_nacimiento = anio_nacimiento
         self.genero = genero
         self.codigo_postal = codigo_postal
+    
+    @classmethod
+    def create_object_from_df_row(cls, row):
+        """
+        Crea una instancia de la clase a partir de una fila de un dataframe
+        """
+        return Persona(row["Full Name"], row["year of birth"], row['Gender'], row['Zip Code'], row['id'])
     
     @classmethod
     def create_df_from_csv(cls, filename):

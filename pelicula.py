@@ -1,9 +1,20 @@
 import pandas as pd
 from datetime import datetime
 from matplotlib import pyplot as plt
+from sqlalchemy import Column, Integer, String, DateTime, ARRAY
+from sqlalchemy.ext.declarative import declarative_base
 
-class Pelicula:
+Base = declarative_base()
 
+class Pelicula(Base):
+    __tablename__ = 'Pelicula'
+
+    id = Column(Integer, primary_key=True)
+    nombre = Column(String(255), nullable=False)
+    fecha_lanzamiento = Column(DateTime, nullable=False)
+    imdb_url = Column(String(255), nullable=False)
+    generos = Column(ARRAY(String), nullable=False)
+    
     generos_de_peliculas = ["unknown", "Action","Adventure","Animation","Children's","Comedy","Crime","Documentary","Drama",
                    "Fantasy","Film-Noir","Horror","Musical","Mystery","Romance","Sci-Fi","Thriller","War","Western"]
 

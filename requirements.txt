@@ -1,5 +1,7 @@
 pandas
 matplotlib
+SQLAlchemy==1.4.25
+psycopg2-binary
 
 # conda create --name itba_python_tp_integrador --file requirements.txt
 # conda activate itba_python_tp_integrador

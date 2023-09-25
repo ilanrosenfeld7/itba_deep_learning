@@ -1,8 +1,23 @@
 from persona import Persona
 import pandas as pd
 from datetime import datetime
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy.ext.declarative import declarative_base
+
+from sqlalchemy.orm import relationship
+
+Base = declarative_base()
 
 class Usuario(Persona):
+
+    __tablename__ = 'Usuario'
+
+    usuario_id = Column(Integer, ForeignKey('Persona.id'), primary_key=True)
+    ocupacion = Column(String(255), nullable=False)
+    fecha_alta = Column(DateTime, nullable=False)
+    
+    # Establish a one-to-one relationship with Persona
+    persona = relationship('Persona', back_populates='usuario')
 
     def __init__(self, id, fecha_nacimiento, genero, codigo_postal, ocupacion, fecha_alta):
         super().__init__(id, fecha_nacimiento, genero, codigo_postal)
