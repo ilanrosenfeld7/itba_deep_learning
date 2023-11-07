@@ -27,7 +27,26 @@ class Pelicula(Base):
 
     def __repr__(self):
         return f'Nombre: {self.nombre}, Fecha Lanzamiento: {self.fecha_lanzamiento}, IMDB URL: {self.imdb_url}, Generos: {", ".join(self.generos)}\n'
-    
+
+    @classmethod
+    def rename_columns(cls, df):
+        # Create a dictionary with the column name mappings
+        column_mappings = {'Name': 'nombre', 'Release Date': 'fecha_lanzamiento', 'IMDB URL':'imdb_url'}
+        # Rename the columns
+        df = df.rename(columns=column_mappings)
+        return df
+
+    @classmethod
+    def get_by_id(cls, session, movie_id):
+        row = session.query(Pelicula.id, Pelicula.nombre, Pelicula.fecha_lanzamiento, Pelicula.imdb_url).filter_by(id=movie_id).first()
+        # Convert the row to a dictionary
+        return {
+            "id": row.id,
+            "nombre": row.nombre,
+            "fecha_lanzamiento": row.fecha_lanzamiento.strftime("%Y-%m-%d"),
+            "imdb_url": row.imdb_url
+        }
+
     def class_instance_to_df_row(self):
         """
         Transforma una instancia de la clase a un Dataframe row de pandas
@@ -78,7 +97,7 @@ class Pelicula(Base):
         df_peliculas["IMDB URL"].fillna("http://us.imdb.com/M/title-exact?Unknown", inplace=True)
         
         return df_peliculas
-    
+
     @classmethod
     def get_from_df(cls, df_mov, id=None, nombre = None, anios = None, generos = None):
         """

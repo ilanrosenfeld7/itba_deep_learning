@@ -13,6 +13,10 @@ TP integrador ITBA Deep Learning Ilan Rosenfeld
 
 5. [RDBMS - PostgreSQL](#rdbms-(postgresql))
 
+6. [ORM - SQLAlchemy](#orm-sqlalchemy)
+
+7. [API de recomendaciones](#api-de-recomendaciones)
+
 ## Notebook
 
 Para interactuar con el código directamente y de manera más simple, se disponibilizó un Google Colab Notebook. El mismo se encuentra en el siguiente link: https://colab.research.google.com/drive/1iBOE7OfBtzEvm-mGtN1FyDboVVr7goR5?authuser=3#scrollTo=GOmXHWAOvku0
@@ -124,3 +128,15 @@ $ python db_tables_creation.py
 Darle click derecho Refresh a _itba_db_ en pgAdmin y validar que las tablas se crearon en _itba_db > Schemas > public > Tables_. En [useful_queries.sql](useful_queries.sql) están los SELECT de ejemplo para validar que la data existe.
 
 _**Nota**: si se corre más de una vez podría dar error por repetir claves primarias_
+
+## API de recomendaciones
+
+1) Correr recommendations api (tras actualizar volver a instalar requirements.txt con pip)
+
+```
+$ python recommendations_api.py
+```
+
+2) Entrar a Swagger para probar la API. Ir en el navegador a http://localhost:5000/swagger
+
+3) Probar endpoints con try it out

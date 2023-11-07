@@ -1,7 +1,11 @@
 pandas
 matplotlib
-SQLAlchemy==1.4.25
+SQLAlchemy==2.0.23
 psycopg2-binary
+Flask==3.0.0
+Flask-SQLAlchemy==3.1.1
+flask-restx==1.2.0
+flask-swagger-ui==4.11.1
 
 # conda create --name itba_python_tp_integrador --file requirements.txt
 # conda activate itba_python_tp_integrador
