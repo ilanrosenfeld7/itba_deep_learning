@@ -140,3 +140,34 @@ $ python recommendations_api.py
 2) Entrar a Swagger para probar la API. Ir en el navegador a http://localhost:5000/swagger
 
 3) Probar endpoints con try it out
+
+## DB vectorial: instalar OpenSearch
+
+1) Pullear imagen de docker
+```
+$ docker pull opensearchproject/opensearch
+```
+
+2) Crear folder vector_db (fuera del folder clonado del repo) para mantener la data y correr el contenedor con la DB
+```
+$ mkdir vector_db
+$ cd vector_db
+$ docker run -p 9200:9200 -p 9600:9600 --net itba_network -e "discovery.type=single-node" --name opensearch-node -v vector_db:/usr/share/opensearch/data -d opensearchproject/opensearch:latest
+$ docker run -d --name opensearch-node1 --net itba_network -p 9200:9200 -p 9600:9600 -e "discovery.type=single-node" -v vector_db:/usr/share/opensearch/data opensearchproject/opensearch:latest
+```
+
+3) Test it's up
+```
+$ curl -X GET "https://localhost:9200/_cat/nodes?v" -ku admin:admin
+```
+
+4) Create itba_movies collection
+```
+$ curl -XPUT -H "Content-Type: application/json" "https://localhost:9200/itba_movies" -ku admin:admin
+```
+
+5) Validate it was created
+```
+$ curl -XGET "https://localhost:9200/_cat/indices?v"  -ku admin:admin
+```
+

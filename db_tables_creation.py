@@ -23,7 +23,7 @@ if __name__ == '__main__':
     ScoreBase.metadata.create_all(engine)
 
     df_peliculas = Pelicula.create_df_from_csv(filename="datasets/peliculas.csv")
-    df_peliculas = Pelicula.rename_columns(df_peliculas)
+    df_peliculas = Pelicula.rename_columns_and_compress_genders(df_peliculas)
     df_peliculas.to_sql("Pelicula", engine, if_exists='replace', index=False)
 
     df_personas = Persona.create_df_from_csv(filename="datasets/personas.csv")

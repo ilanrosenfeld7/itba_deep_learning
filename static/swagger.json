@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-      "title": "Access API",
+      "title": "Movies recommendations API",
       "version": "1.0.0"
     },
     "paths": {
@@ -44,6 +44,84 @@
             },
             "404": {
               "description": "Movie not found"
+            }
+          }
+        }
+      },
+      "/recommendations": {
+        "get": {
+          "description": "Get recommendations for a specific user",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "name": "user_id",
+              "in": "query",
+              "description": "User id",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "k",
+              "in": "query",
+              "description": "K",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Movies recommendations"
+            },
+            "400": {
+              "description": "Missing required parameter"
+            }
+          }
+        }
+      },
+      "/similar_movies": {
+        "get": {
+          "description": "Get similar movies for a specific movie",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "name": "movie_id",
+              "in": "query",
+              "description": "Movie id",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "k",
+              "in": "query",
+              "description": "K",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Similar movies"
+            },
+            "400": {
+              "description": "Missing required parameter"
             }
           }
         }

@@ -29,22 +29,29 @@ class Pelicula(Base):
         return f'Nombre: {self.nombre}, Fecha Lanzamiento: {self.fecha_lanzamiento}, IMDB URL: {self.imdb_url}, Generos: {", ".join(self.generos)}\n'
 
     @classmethod
-    def rename_columns(cls, df):
-        # Create a dictionary with the column name mappings
-        column_mappings = {'Name': 'nombre', 'Release Date': 'fecha_lanzamiento', 'IMDB URL':'imdb_url'}
-        # Rename the columns
-        df = df.rename(columns=column_mappings)
-        return df
+    def rename_columns_and_compress_genders(cls, df):
+        new_df = pd.DataFrame({
+            'id': df['id'],
+            'nombre': df['Name'],
+            'fecha_lanzamiento': df['Release Date'],
+            'imdb_url': df['IMDB URL'],
+            'generos': df.iloc[:, 1:].apply(
+                    lambda row: ','.join(df.columns[1:][row == 1]), axis=1
+            )
+        })
+
+        return new_df
 
     @classmethod
     def get_by_id(cls, session, movie_id):
-        row = session.query(Pelicula.id, Pelicula.nombre, Pelicula.fecha_lanzamiento, Pelicula.imdb_url).filter_by(id=movie_id).first()
-        # Convert the row to a dictionary
+        row = session.query(Pelicula).filter_by(id=movie_id).first()
+
         return {
             "id": row.id,
             "nombre": row.nombre,
             "fecha_lanzamiento": row.fecha_lanzamiento.strftime("%Y-%m-%d"),
-            "imdb_url": row.imdb_url
+            "imdb_url": row.imdb_url,
+            "generos": ''.join(row.generos)
         }
 
     def class_instance_to_df_row(self):
