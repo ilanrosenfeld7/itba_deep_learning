@@ -17,6 +17,8 @@ TP integrador ITBA Deep Learning Ilan Rosenfeld
 
 7. [API de recomendaciones](#api-de-recomendaciones)
 
+8. [DB Vectorial - Instalar Opensearch](#db-vectorial-instalar-opensearch)
+
 ## Notebook
 
 Para interactuar con el código directamente y de manera más simple, se disponibilizó un Google Colab Notebook. El mismo se encuentra en el siguiente link: https://colab.research.google.com/drive/1iBOE7OfBtzEvm-mGtN1FyDboVVr7goR5?authuser=3#scrollTo=GOmXHWAOvku0
@@ -131,15 +133,21 @@ _**Nota**: si se corre más de una vez podría dar error por repetir claves prim
 
 ## API de recomendaciones
 
-1) Correr recommendations api (tras actualizar volver a instalar requirements.txt con pip)
+1) Crear imagen de docker de la API
 
 ```
-$ python recommendations_api.py
+$ docker build -t recommendations_api:latest .
 ```
 
-2) Entrar a Swagger para probar la API. Ir en el navegador a http://localhost:5000/swagger
+2) Correr container de docker (usar puerto 90, el 80 lo usará pgadmin)
+```
+$ docker run -d --net itba_network -p 90:90 recommendations_api 
+```
 
-3) Probar endpoints con try it out
+3) Entrar a Swagger para probar la API. Ir en el navegador a http://127.0.0.1:90/swagger
+
+4) Probar endpoints con try it out
+
 
 ## DB vectorial: instalar OpenSearch
 

@@ -9,7 +9,7 @@ import json
 
 app = Flask(__name__)
 api = Api(app, title='ITBA Recommendations API', description='API documentation using Swagger')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:itba123@localhost:5432/itba_db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:itba123@postgres-container:5432/itba_db'
 db = SQLAlchemy(app)
 
 # Create the engine and session
@@ -102,4 +102,4 @@ def health_check():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, host="0.0.0.0", port=90)
