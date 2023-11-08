@@ -19,6 +19,8 @@ TP integrador ITBA Deep Learning Ilan Rosenfeld
 
 8. [DB Vectorial - Instalar Opensearch](#db-vectorial-instalar-opensearch)
 
+9. [Embeddings Generator](#embeddings-generator)
+
 ## Notebook
 
 Para interactuar con el código directamente y de manera más simple, se disponibilizó un Google Colab Notebook. El mismo se encuentra en el siguiente link: https://colab.research.google.com/drive/1iBOE7OfBtzEvm-mGtN1FyDboVVr7goR5?authuser=3#scrollTo=GOmXHWAOvku0
@@ -161,7 +163,6 @@ $ docker pull opensearchproject/opensearch
 $ mkdir vector_db
 $ cd vector_db
 $ docker run -p 9200:9200 -p 9600:9600 --net itba_network -e "discovery.type=single-node" --name opensearch-node -v vector_db:/usr/share/opensearch/data -d opensearchproject/opensearch:latest
-$ docker run -d --name opensearch-node1 --net itba_network -p 9200:9200 -p 9600:9600 -e "discovery.type=single-node" -v vector_db:/usr/share/opensearch/data opensearchproject/opensearch:latest
 ```
 
 3) Test it's up
@@ -178,4 +179,6 @@ $ curl -XPUT -H "Content-Type: application/json" "https://localhost:9200/itba_mo
 ```
 $ curl -XGET "https://localhost:9200/_cat/indices?v"  -ku admin:admin
 ```
+
+## Embeddings generator
 

@@ -1,0 +1,66 @@
+version: '3'
+services:
+
+  postgres-container:
+    image: postgres
+    container_name: postgres-container
+    restart: always
+    networks:
+      - itba_network
+    environment:
+      - POSTGRES_PASSWORD=itba123
+    ports:
+      - 5432:5432
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  pg_admin_container:
+    image: dpage/pgadmin4
+    container_name: pg_admin_container
+    restart: always
+    ports:
+      - 80:80
+    networks:
+      - itba_network
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=user@domain.com
+      - PGADMIN_DEFAULT_PASSWORD=SuperSecret
+      - PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION=True
+      - PGADMIN_CONFIG_LOGIN_BANNER=Authorised users only!
+      - PGADMIN_CONFIG_CONSOLE_LOG_LEVEL=10
+
+  recommendations_api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: recommendations_api
+    restart: always
+    ports:
+      - 90:90
+    networks:
+      - itba_network
+
+  opensearch-node:
+    image: opensearchproject/opensearch:latest
+    container_name: opensearch-node
+    restart: always
+    ports:
+      - 9200:9200
+      - 9600:9600
+    networks:
+      - itba_network
+    environment:
+      - discovery.type=single-node
+    volumes:
+      - vector_db:/usr/share/opensearch/data
+
+networks:
+  itba_network:
+    name: itba_network
+    external: true
+
+volumes:
+  vector_db:
+    external: true
+  pg_data:
+    external: true
