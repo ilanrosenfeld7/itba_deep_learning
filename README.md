@@ -29,9 +29,19 @@ TP integrador ITBA Deep Learning Ilan Rosenfeld
 
     5.1.7 [DB vectorial: instalar OpenSearch](#db-vectorial-instalar-opensearch)
 
-    5.2 [Training y deploy de Modelo](#training-y-deploy-de-modelo)
+    5.1.8 [Validación final](#validación-final)
 
-    5.3 [Generación de Embeddings](#generación-de-embeddings)
+    5.2 [Modelo de recomendación](#modelo-de-recomendación)
+
+    5.2.1 [Generación de Embeddings](#generación-de-embeddings)
+    
+    5.2.2 [Entrenamiento del modelo](#entrenamiento-del-modelo)
+
+    5.2.3 [Batch prediction](#batch-prediction)
+
+    5.3 [Prueba de la API](#prueba-de-la-api)
+
+    
 
     5.4 [Prueba de la API](#prueba-de-la-api)
 
