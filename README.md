@@ -11,15 +11,29 @@ TP integrador ITBA Deep Learning Ilan Rosenfeld
 
 4. [Main](#main)
 
-5. [RDBMS - PostgreSQL](#rdbms-(postgresql))
+5. [TP Integrador 2: Sistema de recomendaciones](#tp-integrador-2-sistema-de-recomendaciones)
 
-6. [ORM - SQLAlchemy](#orm-sqlalchemy)
+    5.1 [Set up de componentes](#set-up-de-componentes)
+        
+    5.1.1 [Docker y network](#docker-y-network)
 
-7. [API de recomendaciones](#api-de-recomendaciones)
+    5.1.2 [Dependencias](#dependencias)
 
-8. [DB Vectorial - Instalar Opensearch](#db-vectorial-instalar-opensearch)
+    5.1.3 [RDBMS (PostgreSQL)](#rdbms-postgresql)
 
-9. [Embeddings Generator](#embeddings-generator)
+    5.1.4 [pgAdmin](#pgadmin)
+
+    5.1.5 [ORM (sqlalchemy)](#orm-sqlalchemy)
+
+    5.1.6 [API de recomendaciones](#api-de-recomendaciones)
+
+    5.1.7 [DB vectorial: instalar OpenSearch](#db-vectorial-instalar-opensearch)
+
+    5.2 [Training y deploy de Modelo](#training-y-deploy-de-modelo)
+
+    5.3 [Generación de Embeddings](#generación-de-embeddings)
+
+    5.4 [Prueba de la API](#prueba-de-la-api)
 
 ## Notebook
 
@@ -218,5 +232,41 @@ $ curl -XGET "https://localhost:9200/_cat/indices?v"  -ku admin:admin
 ```
 ![swagger](assets/opensearch_2.png)
 
-#### Embeddings generator
+#### Validación final
+
+Tras levantar todos los containers, así debería verse el resultado del comando $ docker ps:
+
+![docker_ps](assets/docker_ps.png)
+
+### Modelo de recomendación
+
+En esta sección, se generarán los embeddings de las movies y users, se entrenará al modelo, y se generarán predicciones de manera batch
+
+#### Generación de Embeddings
+
+***A actualizar por Gaspar para usar su código y guardar sus embeddings***
+
+Se deben generar los embeddings de las movies y users y persistir en la DB vectorial. En [embeddings_generator.py](./embeddings_generator.py) hay código ejemplo de import de OpenSearch, conexión con la DB vectorial e inserción de movies.
+
+#### Entrenamiento del modelo
+
+***A updatear por Gaspar para usar su código y entrenar modelo***
+
+Dejar código en [model_training_and_batch_prediction.py](./model_training_and_batch_prediction.py)  y entrenar modelo
+
+#### Batch prediction
+
+***A correr por Gaspar para usar su modelo y generar predicciones***
+
+Correr modelo y generar predicciones en modo batch. Guardarlas en PostgreSQL en tabla de Score (se espera el schema original, si se cambia, revisar cambios necesarios)
+
+![swagger](assets/score_schema.png)
+
+### Prueba de la API
+
+Probar la API desde swagger (localhost:90/swagger) insertando user o movie id y k:
+
+![swagger_recommendations](assets/swagger_recommendations.png)
+
+![swagger_similar_movies](assets/swagger_similar_movies.png)
 

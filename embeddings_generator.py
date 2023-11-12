@@ -179,23 +179,7 @@ print(f"CONTENIDO INDICE: {client.indices.get('movie')}")
 # %%
 
 # %%
-"""
-first_row = peliculas_df.iloc[0]
-print("PROBANDO PERSISTIR UN EJEMPLO")
-mv = Movie(
-        movie_id=first_row.id,
-        url=first_row["IMDB URL"],
-        name=first_row['Name'],
-        vector=list(movie_embeddings_matrix[first_row.movieIdx]),
-        created_at=datetime.datetime.now()
-    )
-# %%
-mv.to_dict()
-# %%
-mv.save(using=client)
-# %%
-mv.meta.to_dict()
-"""
+
 print("PERSISTIENDO DATAFRAME AL INDICE")
 for i, row in peliculas_df.iterrows():
     mv = Movie(
@@ -207,16 +191,3 @@ for i, row in peliculas_df.iterrows():
     )
     mv.save(using=client)
 # %%
-
-"""
-response = client.search(index='movie', body={})
-print(response)
-response = client.search(index='Movie', body={})
-print(response)
-response = client.search(index='eqgeq', body={})
-print(response)
-
-# %%
-print("COUNT DE MOVIES EN INDICE:")
-print(Movie.search(using=client).count())
-"""
