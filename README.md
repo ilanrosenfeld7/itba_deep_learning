@@ -41,6 +41,8 @@ TP integrador ITBA Deep Learning Ilan Rosenfeld
 
     5.3 [Prueba de la API](#prueba-de-la-api)
 
+    5.4 [Adicional: K-means](#adicional-kmeans)
+
     
 
     5.4 [Prueba de la API](#prueba-de-la-api)
@@ -76,6 +78,8 @@ $ python -W ignore persona.py
 La clase [main.py](main.py) contiene el código necesario para cargar todos los csv a dataframes y asimismo guardar los dataframes como csv
 
 ## TP Integrador 2: Sistema de recomendaciones
+
+![HLA](assets/HLA.png)
 
 ### Set up de componentes
 
@@ -279,4 +283,8 @@ Probar la API desde swagger (localhost:90/swagger) insertando user o movie id y 
 ![swagger_recommendations](assets/swagger_recommendations.png)
 
 ![swagger_similar_movies](assets/swagger_similar_movies.png)
+
+### Adicional: Kmeans
+
+Puntos extra: Agrupar los usuarios utilizando el algoritmo de Kmeans (implementado en OpenSearch). Describir cada cluster encontrado.
 
