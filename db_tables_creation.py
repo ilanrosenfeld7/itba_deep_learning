@@ -31,6 +31,7 @@ if __name__ == '__main__':
     session.add_all(personas_instances)
 
     df_scores = Score.create_df_from_csv(filename="datasets/scores.csv")
+    df_scores = Score.rename_columns_and_compress_genders(df_scores)
     df_scores.to_sql("Score", engine, if_exists='replace', index=False)
 
     df_users = Usuario.create_df_from_csv(filename="datasets/usuarios.csv")

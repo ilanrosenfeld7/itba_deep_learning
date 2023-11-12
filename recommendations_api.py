@@ -5,11 +5,13 @@ from sqlalchemy.orm import sessionmaker
 from flask_restx import Api, Resource
 from flask_swagger_ui import get_swaggerui_blueprint
 from pelicula import Pelicula
+from score import Score
 import json
+from opensearchpy import OpenSearch
 
 app = Flask(__name__)
 api = Api(app, title='ITBA Recommendations API', description='API documentation using Swagger')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:itba123@postgres-container:5432/itba_db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:itba123@localhost:5432/itba_db'
 db = SQLAlchemy(app)
 
 # Create the engine and session
@@ -28,6 +30,17 @@ swagger_ui_blueprint = get_swaggerui_blueprint(
 )
 app.register_blueprint(swagger_ui_blueprint, url_prefix=SWAGGER_URL)
 
+host = 'localhost'
+port = 9200
+auth = ('admin', 'admin')
+
+client = OpenSearch(
+    hosts = [{'host': host, 'port': port}],
+    http_auth = auth,
+    use_ssl = True,
+    verify_certs = False,
+)
+
 @app.route('/recommendations', methods=['GET'])
 def get_movie_recommendations():
     # Retrieve user ID and number K from the request parameters
@@ -37,55 +50,60 @@ def get_movie_recommendations():
     if not user_id or not k:
         abort(400, "You must specify both user_id and k")
 
-    """
-    http://localhost:5000/recommendations?user_id=1&k=3
-    devolver como mínimo nombre, año, url, géneros y lugar en el ranking de la recomendación de la película. Obtener los datos de la película de la DB relacional.
-    """
-    # Get recommendations based on the user ID
-    #recommendations = movie_recommendations.get(user_id, [])
-
     session = Session()
-    # this will be replaced later for the data obtained from vector DB
-    peli1 = Pelicula.get_by_id(session, 1)
-    peli2 = Pelicula.get_by_id(session, 2)
-    peli3 = Pelicula.get_by_id(session, 3)
-    peli4 = Pelicula.get_by_id(session, 4)
-    peli5 = Pelicula.get_by_id(session, 5)
-    peli6 = Pelicula.get_by_id(session, 6)
-    peli7 = Pelicula.get_by_id(session, 7)
-    recommendations = [peli1, peli2, peli3, peli4, peli5, peli6, peli7]
+    rankings = Score.get_by_user_id(session, user_id)
 
-    # Return K movie recommendations
-    return jsonify(recommendations[:k])
+    return [Pelicula.get_by_id(session, rank["pelicula_id"]) for rank in rankings[:k]]
+
 
 @app.route('/similar_movies', methods=['GET'])
 def get_similar_movies():
     movie_id = request.args.get('movie_id')
-    k = int(request.args.get('k'))
+    k = int(request.args.get('k')) + 1
 
     if not movie_id or not k:
         abort(400, "You must specify both movie_id and k")
-    """
-    http://localhost:5000/similar_movies?movie_id=1&k=3
-    devolver como mínimo nombre, año, url, géneros y lugar en el ranking de la recomendación de la película. Obtener los datos de la película de la DB relacional.
-    """
 
-    # Get recommendations based on the user ID
-    # recommendations = movie_recommendations.get(user_id, [])
+    # Define the search query
+    query = {
+        "query": {
+            "term": {
+                "movie_id": {
+                    "value": movie_id
+                }
+            }
+        }
+    }
+    response = client.search(index='movie', body=query)
 
-    session = Session()
-    # this will be replaced later for the data obtained from vector DB
-    peli1 = Pelicula.get_by_id(session, 8)
-    peli2 = Pelicula.get_by_id(session, 9)
-    peli3 = Pelicula.get_by_id(session, 10)
-    peli4 = Pelicula.get_by_id(session, 11)
-    peli5 = Pelicula.get_by_id(session, 12)
-    peli6 = Pelicula.get_by_id(session, 13)
-    peli7 = Pelicula.get_by_id(session, 14)
-    recommendations = [peli1, peli2, peli3, peli4, peli5, peli6, peli7]
+    if response['hits']['hits']:
+        vector = response['hits']['hits'][0]["_source"]["vector"]
+        query = {
+            "size": k,
+            "query": {
+                "knn": {
+                    "vector": {
+                        "vector": vector,
+                        "k": k
+                    }
+                }
+            }
+        }
+        response = client.search(index='movie', body=query)
 
-    # Return K movie recommendations
-    return jsonify(recommendations[:k])
+        session = Session()
+
+        k_similar_movies = []
+        for i, hit in enumerate(response.get("hits", {}).get("hits", [])):
+            if not int(hit["_source"]["movie_id"]) == int(movie_id):
+                new_json = Pelicula.get_by_id(session, hit["_source"]["movie_id"])
+                new_json["ranking"] = i
+                k_similar_movies.append(new_json)
+
+        return json.dumps(k_similar_movies)
+
+    else: return jsonify({'error': 'Movie not found'}), 404
+
 
 @app.route('/movies/<int:movie_id>', methods=['GET'])
 def get_movie(movie_id):
@@ -93,6 +111,16 @@ def get_movie(movie_id):
     movie = Pelicula.get_by_id(session, movie_id)
     if movie:
         return json.dumps(movie), 200
+    else:
+        return jsonify({'error': 'Movie not found'}), 404
+
+
+@app.route('/scores/<int:user_id>', methods=['GET'])
+def get_rating(user_id):
+    session = Session()
+    rankings = Score.get_by_user_id(session, user_id)
+    if rankings:
+        return rankings, 200
     else:
         return jsonify({'error': 'Movie not found'}), 404
 

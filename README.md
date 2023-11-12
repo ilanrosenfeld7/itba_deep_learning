@@ -51,31 +51,55 @@ $ python -W ignore persona.py
 
 La clase [main.py](main.py) contiene el código necesario para cargar todos los csv a dataframes y asimismo guardar los dataframes como csv
 
-## RDBMS (PostgreSQL)
+## TP Integrador 2: Sistema de recomendaciones
 
-Seguir los siguientes pasos para instalar la base de datos PostgreSQL local:
+### Set up de componentes
 
-1) Instalar docker
-2) Pullear imagen de docker
-```
-$ docker pull postgres
-```
-3) Crear volumen para mantener persistencia al apagar y prender container
-```
-$ docker volume create pg_data
-```
+El sistema de recomendaciones se forma con 4 componentes principales:
+1) **RDBMS**: base de datos relacional PostgreSQL con datos de peliculas, users, rankings, trabajadores y personas
+2) **pgAdmin**: interfaz de usuario para interactuar con el RDBMS
+3) **Base de datos vectorial**: Opensearch para almacenar embeddings de peliculas y usuarios
+4) **API de recomendaciones**: API con Python + Flask para interactuar con los componentes anteriores y generar recomendaciones en base a requests del usuario
 
-4) Crear network de docker
+Todos estos componentes serán instanciados mediante docker. A continuación se describe como instalar cada uno de ellos.
+
+#### Docker y network
+
+A modo de poder continuar, instalar y setupear docker:
+
+1) Instalar docker: dependiendo del OS instalar docker asociadamente
+2) Crear network: servirá para permitir a los diferentes contenedores comunicarse:
 ```
 $ docker network create itba_network
 ```
 
-5) Crear folder pg_data
+#### Dependencias
+
+1) Actualizar su ambiente virtual (generalmente conda) con el nuevo requirements.txt
+
+```
+$ pip install -r requirements.txt
+```
+
+#### RDBMS (PostgreSQL)
+
+Seguir los siguientes pasos para instalar la base de datos PostgreSQL local:
+
+1) Pullear imagen de docker
+```
+$ docker pull postgres
+```
+2) Crear volumen para mantener persistencia al apagar y prender container
+```
+$ docker volume create pg_data
+```
+
+3) Crear folder pg_data
 ```
 $ mkdir pg_data
 ```
-y luego correr postgres container:
 
+4) Correr postgres container:
 ```
 $ docker run --name postgres-container \
     --network itba_network \
@@ -94,7 +118,15 @@ Explicación variables:
 
 Si se apaga la computadora y se cae el container, correr de nuevo el comando, y ante el error _Error response from daemon: Conflict. The container name "/postgres-container" is already in use by container "XXX"_, hacer _docker start XXX_.
 
-6) Pullear y levantar imagen de docker de pgAdmin
+5) Validar quedó el contenedor corriendo con el siguiente comando de docker
+```
+$ docker ps
+```
+Deberías ver el contenedor de postgres con STATUS: Up
+
+#### pgAdmin
+
+1) Pullear y levantar imagen de docker de pgAdmin
 
 Para poder acceder a la DB desde una interfaz gráfica (si aún no se pulleó la imagen, este comando la pullea la primera vez y luego la levanta)
 ```
@@ -111,31 +143,31 @@ $ docker run -p 80:80 \
 
 Mismo caso, ante error de _container is already in use_, hacer _docker start_. 
 
-7) Entrar en el browser a localhost:80 y se abrirá la interfaz de pgAdmin, ingresar con las credenciales mencionadas arriba.
+2) Entrar en el browser a localhost:80 y se abrirá la interfaz de pgAdmin, ingresar con las credenciales mencionadas arriba.
+
+![pgAdmin main screen](assets/pg_admin.png)
 
 8) Dentro de pgAdmin, ir a _Servers >> Create - Server Group_. Llamarlo _itba_. Luego darle click derecho a itba, _Register > Server_. Llamarlo _itba_server_. Ir al tab _Connection_, en _Host name/address_ colocar _postgres-container_, dejar _port:5432_, como username dejar _postgres_, y como password _itba123_.
 
+![pgAdmin connection screen](assets/pg_admin_2.png)
+
 9) Desplegar itba_db, en Databases dar click derecho, _Create > Database_, darle _itba_db_. Guardar
 
-## ORM (sqlalchemy)
+#### ORM (sqlalchemy)
 
-1) Actualizar su ambiente virtual (generalmente conda) con el nuevo requirements.txt
-
-```
-$ pip install -r requirements.txt
-```
-
-2) Las clases pelicula, persona, score, trabajador, usuario y score fueron actualizadas con código sqlalchemy para definirse como tablas. Correr el script que las inyecta en el postgres:
+1) Las clases pelicula, persona, score, trabajador, usuario y score fueron actualizadas con código sqlalchemy para definirse como tablas. Correr el script que las inyecta en el postgres:
 ```
 $ python db_tables_creation.py
 ```
 Darle click derecho Refresh a _itba_db_ en pgAdmin y validar que las tablas se crearon en _itba_db > Schemas > public > Tables_. En [useful_queries.sql](useful_queries.sql) están los SELECT de ejemplo para validar que la data existe.
 
-_**Nota**: si se corre más de una vez podría dar error por repetir claves primarias_
+_**Nota**: si se corre más de una vez podría dar error por repetir claves primarias. Ante algún error o update, borrar tablas desde pgAdmin y volver a correr esto_
 
-## API de recomendaciones
+![pgAdmin tables](assets/pg_admin_movies.png)
 
-1) Crear imagen de docker de la API
+#### API de recomendaciones
+
+1) Crear imagen de docker de la API. Correr el siguiente comando parado en itba_deep_learning/ (donde está el Dockerfile)
 
 ```
 $ docker build -t recommendations_api:latest .
@@ -146,12 +178,16 @@ $ docker build -t recommendations_api:latest .
 $ docker run -d --net itba_network -p 90:90 recommendations_api 
 ```
 
-3) Entrar a Swagger para probar la API. Ir en el navegador a http://127.0.0.1:90/swagger
+3) Entrar a Swagger para probar la API: a modo de mejorar la usabilidad de la API, se integró la misma con swagger. Ir en el navegador a http://127.0.0.1:90/swagger y se debería ver lo siguiente:
 
-4) Probar endpoints con try it out
+![swagger](assets/swagger.png)
 
+4) Probar endpoint de health con try it out, debería devolverse un 200 OK
 
-## DB vectorial: instalar OpenSearch
+![swagger](assets/swagger_health.png)
+![swagger](assets/swagger_health_2.png)
+
+#### DB vectorial: instalar OpenSearch
 
 1) Pullear imagen de docker
 ```
@@ -169,6 +205,7 @@ $ docker run -p 9200:9200 -p 9600:9600 --net itba_network -e "discovery.type=sin
 ```
 $ curl -X GET "https://localhost:9200/_cat/nodes?v" -ku admin:admin
 ```
+![swagger](assets/opensearch_1.png)
 
 4) Create itba_movies collection
 ```
@@ -179,6 +216,7 @@ $ curl -XPUT -H "Content-Type: application/json" "https://localhost:9200/itba_mo
 ```
 $ curl -XGET "https://localhost:9200/_cat/indices?v"  -ku admin:admin
 ```
+![swagger](assets/opensearch_2.png)
 
-## Embeddings generator
+#### Embeddings generator
 

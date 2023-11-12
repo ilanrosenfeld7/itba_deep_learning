@@ -7,6 +7,7 @@ from persona import Persona
 from trabajador import Trabajador
 from sqlalchemy import Column, Integer, DateTime, Enum
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import desc
 
 Base = declarative_base()
 
@@ -17,7 +18,7 @@ class Score(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, nullable=False)
     pelicula_id = Column(Integer, nullable=False)
-    puntuacion = Column(Enum(name='puntuacion_enum', values=[1, 2, 3, 4, 5]), nullable=False)
+    puntuacion = Column(Integer, nullable=False)
     timestamp = Column(DateTime, nullable=False)
     
     def __init__(self, user_id, pelicula_id, puntuacion, timestamp, id=None):
@@ -26,7 +27,33 @@ class Score(Base):
         self.puntuacion = puntuacion
         self.timestamp = timestamp
         self.id = id
-    
+
+    @classmethod
+    def rename_columns_and_compress_genders(cls, df):
+        new_df = pd.DataFrame({
+            'id': df['id'],
+            'user_id': df['user_id'],
+            'pelicula_id': df['movie_id'],
+            'puntuacion': df['rating'],
+            'timestamp': df['Date']
+        })
+
+        return new_df
+
+    @classmethod
+    def get_by_user_id(cls, session, user_id):
+        rankings = session.query(Score).filter(Score.user_id == user_id).order_by(desc(Score.puntuacion)).all()
+        rows = [{"id": row.id,
+                 "user_id": row.user_id,
+                 "pelicula_id": row.pelicula_id,
+                 'puntuacion': row.puntuacion,
+                 'timestamp': row.timestamp
+                 }
+                for row in rankings]
+        return rows
+
+
+
     def class_instance_to_df_row(self):
         """
         Transforma una instancia de la clase a un Dataframe row de pandas
