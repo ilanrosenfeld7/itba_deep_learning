@@ -61,7 +61,12 @@ def get_movie_recommendations():
     predictions = PredictionScore.get_by_user_id_and_ranked_movies(session, user_id, ranked_movies)
     if not predictions:
         return "User has already ranked all movies", 200
-    return predictions[:k]
+
+    peliculas_con_info = [Pelicula.get_by_id(session, prediction["movie_id"]) for prediction in predictions[:k]]
+    for i, peli in enumerate(peliculas_con_info):
+        peli["lugar_en_ranking"] = i+1
+
+    return peliculas_con_info
 
 
 @app.route('/similar_movies', methods=['GET'])
