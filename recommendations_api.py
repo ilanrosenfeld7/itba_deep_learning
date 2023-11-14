@@ -9,11 +9,29 @@ from score import Score
 from prediction_score import PredictionScore
 import json
 from opensearchpy import OpenSearch
+from opensearch_api import get_movie_vector, get_k_similar_movies
 
 app = Flask(__name__)
 api = Api(app, title='ITBA Recommendations API', description='API documentation using Swagger')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:itba123@localhost:5432/itba_db'
+
+# Read the opensearch properties file
+with open('connection_properties.json', 'r') as file:
+    connection_properties = json.load(file)
+
+postgres_user = connection_properties["postgres"]["username"]
+postgres_password = connection_properties["postgres"]["password"]
+postgres_host = connection_properties["postgres"]["_host_docker"]
+postgres_port = connection_properties["postgres"]["port"]
+postgres_db = connection_properties["postgres"]["db"]
+app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{postgres_user}:{postgres_password}@{postgres_host}:{postgres_port}/{postgres_db}'
 db = SQLAlchemy(app)
+
+client = OpenSearch(
+        hosts=[{'host': connection_properties["opensearch"]["_host_docker"], 'port': connection_properties["opensearch"]["port"]}],
+        http_auth=(connection_properties["opensearch"]["username"], connection_properties["opensearch"]["password"]),
+        use_ssl=True,
+        verify_certs=False,
+)
 
 # Create the engine and session
 engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
@@ -30,18 +48,6 @@ swagger_ui_blueprint = get_swaggerui_blueprint(
     }
 )
 app.register_blueprint(swagger_ui_blueprint, url_prefix=SWAGGER_URL)
-
-host = 'localhost'
-port = 9200
-auth = ('admin', 'admin')
-
-client = OpenSearch(
-    hosts = [{'host': host, 'port': port}],
-    http_auth = auth,
-    use_ssl = True,
-    verify_certs = False,
-)
-
 
 @app.route('/recommendations', methods=['GET'])
 def get_movie_recommendations():
@@ -64,7 +70,7 @@ def get_movie_recommendations():
 
     peliculas_con_info = [Pelicula.get_by_id(session, prediction["movie_id"]) for prediction in predictions[:k]]
     for i, peli in enumerate(peliculas_con_info):
-        peli["lugar_en_ranking"] = i+1
+        peli["ranking"] = i+1
 
     return peliculas_con_info
 
@@ -77,43 +83,19 @@ def get_similar_movies():
     if not movie_id or not k:
         abort(400, "You must specify both movie_id and k")
 
-    # Define the search query
-    query = {
-        "query": {
-            "term": {
-                "movie_id": {
-                    "value": movie_id
-                }
-            }
-        }
-    }
-    response = client.search(index='movie', body=query)
-
-    if response['hits']['hits']:
-        vector = response['hits']['hits'][0]["_source"]["vector"]
-        query = {
-            "size": k,
-            "query": {
-                "knn": {
-                    "vector": {
-                        "vector": vector,
-                        "k": k
-                    }
-                }
-            }
-        }
-        response = client.search(index='movie', body=query)
-
+    movie_vector = get_movie_vector(client, movie_id)
+    if movie_vector:
+        similar_movies = get_k_similar_movies(client, movie_vector, k)
         session = Session()
-
+        # Agrego ranking index y cruzo info con RDBMS
         k_similar_movies = []
-        for i, hit in enumerate(response.get("hits", {}).get("hits", [])):
+        for i, hit in enumerate(similar_movies):
             if not int(hit["_source"]["movie_id"]) == int(movie_id):
                 new_json = Pelicula.get_by_id(session, hit["_source"]["movie_id"])
                 new_json["ranking"] = i
                 k_similar_movies.append(new_json)
 
-        return json.dumps(k_similar_movies)
+        return k_similar_movies
 
     else: return jsonify({'error': 'Movie not found'}), 404
 

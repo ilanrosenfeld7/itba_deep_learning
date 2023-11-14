@@ -195,6 +195,8 @@ _**Nota**: si se corre más de una vez podría dar error por repetir claves prim
 
 #### API de recomendaciones
 
+0) Ajustar [recommendations_api.py](./recommendations_api.py) para usar *_host_docker* y no *host* al leer las propiedades de [connection_properties.json](./connection_properties.json)
+
 1) Crear imagen de docker de la API. Correr el siguiente comando parado en itba_deep_learning/ (donde está el Dockerfile)
 
 ```
@@ -244,7 +246,18 @@ $ curl -XPUT -H "Content-Type: application/json" "https://localhost:9200/itba_mo
 ```
 $ curl -XGET "https://localhost:9200/_cat/indices?v"  -ku admin:admin
 ```
+
 ![swagger](assets/opensearch_2.png)
+
+6) Delete index
+```
+$ curl -X DELETE "https://localhost:9200/movie"  -ku admin:admin
+```
+
+7) Get first elements of index
+```
+$ curl -X GET "https://localhost:9200/movie/_search?size=2&q=*"  -ku admin:admin
+```
 
 #### Validación final
 

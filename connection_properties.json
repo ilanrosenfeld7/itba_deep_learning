@@ -1,0 +1,17 @@
+{
+  "opensearch": {
+    "host": "localhost",
+    "_host_docker": "opensearch-node",
+    "port": 9200,
+    "username": "admin",
+    "password": "admin"
+  },
+  "postgres": {
+    "username": "postgres",
+    "password": "itba123",
+    "host": "localhost",
+    "_host_docker": "postgres-container",
+    "port": 5432,
+    "db": "itba_db"
+  }
+}
