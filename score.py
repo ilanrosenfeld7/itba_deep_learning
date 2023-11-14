@@ -42,16 +42,9 @@ class Score(Base):
 
     @classmethod
     def get_by_user_id(cls, session, user_id):
-        rankings = session.query(Score).filter(Score.user_id == user_id).order_by(desc(Score.puntuacion)).all()
-        rows = [{"id": row.id,
-                 "user_id": row.user_id,
-                 "pelicula_id": row.pelicula_id,
-                 'puntuacion': row.puntuacion,
-                 'timestamp': row.timestamp
-                 }
-                for row in rankings]
+        rankings = session.query(Score.pelicula_id).filter(Score.user_id == user_id).all()
+        rows = [row.pelicula_id for row in rankings]
         return rows
-
 
 
     def class_instance_to_df_row(self):
@@ -98,7 +91,14 @@ class Score(Base):
             logical_disjunction = " or ".join(list(map(lambda id: f"movie_id == {id}", peliculas_ids)))
             df_scores = df_scores.query(logical_disjunction)
         return df_scores
-    
+
+    @classmethod
+    def create_object_from_df_row(cls, row):
+        """
+        Crea una instancia de la clase a partir de una fila de un dataframe
+        """
+        return Score(row['user_id'], row["movie_id"], row["rating"], row["Date"], row['id'])
+
     @classmethod
     def create_df_from_csv(cls, filename):
         """

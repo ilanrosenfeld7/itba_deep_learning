@@ -33,9 +33,9 @@ TP integrador ITBA Deep Learning Ilan Rosenfeld
 
     5.2 [Modelo de recomendación](#modelo-de-recomendación)
 
-    5.2.1 [Generación de Embeddings](#generación-de-embeddings)
+    5.2.1 [Entrenamiento del modelo](#entrenamiento-del-modelo)
     
-    5.2.2 [Entrenamiento del modelo](#entrenamiento-del-modelo)
+    5.2.2 [Generación de Embeddings](#generación-de-embeddings)
 
     5.2.3 [Batch prediction](#batch-prediction)
 
@@ -256,25 +256,33 @@ Tras levantar todos los containers, así debería verse el resultado del comando
 
 En esta sección, se generarán los embeddings de las movies y users, se entrenará al modelo, y se generarán predicciones de manera batch
 
-#### Generación de Embeddings
-
-***A actualizar por Gaspar para usar su código y guardar sus embeddings***
-
-Se deben generar los embeddings de las movies y users y persistir en la DB vectorial. En [embeddings_generator.py](./embeddings_generator.py) hay código ejemplo de import de OpenSearch, conexión con la DB vectorial e inserción de movies.
-
 #### Entrenamiento del modelo
 
-***A updatear por Gaspar para usar su código y entrenar modelo***
+Código disponible en la notebook [model_creation.ipynb.py](./model_creation.ipynb)
 
-Dejar código en [model_training_and_batch_prediction.py](./model_training_and_batch_prediction.py)  y entrenar modelo
+#### Generación de Embeddings
+
+Los mismos se generan en el [notebook del modelo](./model_creation.ipynb). Se exportaron a su vez y se dejaron en 
+el file [embedding_movies_genre](./embedding_movies_genre) (es un pandas nd array)
+
+Para insertar los embeddings en la base de datos vectorial y permitir a la API recomendar películas similares, persistirlas 
+con el siguiente comando:
+```
+$ python db_vectorial_embeddings_savinng.py
+```
 
 #### Batch prediction
 
-***A correr por Gaspar para usar su modelo y generar predicciones***
+Tras generar el modelo, el mismo se corrió y se generaron predicciones en modo batch. El file 
+[all_predictions](./all_predictions) posee las mismas (es un dataframe).
 
-Correr modelo y generar predicciones en modo batch. Guardarlas en PostgreSQL en tabla de Score (se espera el schema original, si se cambia, revisar cambios necesarios)
+Para insertar las mismas en la base de datos y permitir a la API generar recomendaciones rápidamente a partir de estas, persistirlas 
+con el siguiente comando:
+```
+$ python db_predictions_persistance.py
+```
 
-![swagger](assets/score_schema.png)
+*Nota: se generaron recomnendaciones para los usuarios 1 a 30 por el tamaño y limitantes del computador local*.
 
 ### Prueba de la API
 

@@ -22,24 +22,37 @@ if __name__ == '__main__':
     PeliculaBase.metadata.create_all(engine)
     ScoreBase.metadata.create_all(engine)
 
+    print("------------------------------")
+    print("PERSISTIENDO PELICULAS")
     df_peliculas = Pelicula.create_df_from_csv(filename="datasets/peliculas.csv")
     df_peliculas = Pelicula.rename_columns_and_compress_genders(df_peliculas)
     df_peliculas.to_sql("Pelicula", engine, if_exists='replace', index=False)
 
+    print("------------------------------")
+    print("PERSISTIENDO PERSONAS")
     df_personas = Persona.create_df_from_csv(filename="datasets/personas.csv")
     personas_instances = [Persona.create_object_from_df_row(row) for _, row in df_personas.iterrows()]
     session.add_all(personas_instances)
 
+    print("------------------------------")
+    print("PERSISTIENDO SCORES")
     df_scores = Score.create_df_from_csv(filename="datasets/scores.csv")
-    df_scores = Score.rename_columns_and_compress_genders(df_scores)
-    df_scores.to_sql("Score", engine, if_exists='replace', index=False)
+    scores_instances = [Score.create_object_from_df_row(row) for _, row in df_scores.iterrows()]
+    session.add_all(scores_instances)
 
+    print("------------------------------")
+    print("PERSISTIENDO USUARIOS")
     df_users = Usuario.create_df_from_csv(filename="datasets/usuarios.csv")
     df_users.to_sql("Usuario", engine, if_exists='replace', index=False)
 
+    print("------------------------------")
+    print("PERSISTIENDO TRABAJADORES")
     df_trabajadores = Trabajador.create_df_from_csv(filename="datasets/trabajadores.csv")
     df_trabajadores.to_sql("Trabajador", engine, if_exists='replace', index=False)
 
     session.commit()
     session.close()
+
+
+
 

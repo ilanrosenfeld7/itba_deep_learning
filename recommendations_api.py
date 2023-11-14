@@ -6,6 +6,7 @@ from flask_restx import Api, Resource
 from flask_swagger_ui import get_swaggerui_blueprint
 from pelicula import Pelicula
 from score import Score
+from prediction_score import PredictionScore
 import json
 from opensearchpy import OpenSearch
 
@@ -41,6 +42,7 @@ client = OpenSearch(
     verify_certs = False,
 )
 
+
 @app.route('/recommendations', methods=['GET'])
 def get_movie_recommendations():
     # Retrieve user ID and number K from the request parameters
@@ -51,9 +53,15 @@ def get_movie_recommendations():
         abort(400, "You must specify both user_id and k")
 
     session = Session()
-    rankings = Score.get_by_user_id(session, user_id)
 
-    return [Pelicula.get_by_id(session, rank["pelicula_id"]) for rank in rankings[:k]]
+    # Traer todos los ids de peliculas de rankings hechos por el usuario
+    ranked_movies = Score.get_by_user_id(session, user_id)
+
+    # Traer predicciones para el usuario de peliculas aun no vistas y ordenadas descendentemente por predicción de ranking
+    predictions = PredictionScore.get_by_user_id_and_ranked_movies(session, user_id, ranked_movies)
+    if not predictions:
+        return "User has already ranked all movies", 200
+    return predictions[:k]
 
 
 @app.route('/similar_movies', methods=['GET'])
